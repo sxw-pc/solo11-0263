@@ -1,0 +1,20 @@
+[
+  {
+    "event_id": "move-example-1",
+    "op": "move",
+    "id": "spare-1",
+    "donor": "claim-a",
+    "receiver": "claim-b",
+    "units": 1,
+    "at": 25
+  },
+  {
+    "event_id": "move-example-2",
+    "op": "move",
+    "id": "spare-2",
+    "donor": "claim-a",
+    "receiver": "claim-b",
+    "units": 1,
+    "at": 25
+  }
+]
