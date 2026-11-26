@@ -54,6 +54,20 @@ class Business(unittest.TestCase):
         self.assertEqual(act(self.db,'reclaim',{'event_id':'orphan-clear','op':'resolve_orphan','id':'orphan-a','independent_receipt':'node-and-gateway-proof'})['decision'],'orphan_cleared')
         self.assertEqual(act(self.db,'reclaim',{'event_id':'close-after-clear','op':'close','case':'reclaim-a'})['decision'],'address_reusable')
 
+    def test_orphan_without_registered_lease_blocks_new_allocation(self):
+        self.fixture('pool_normal')
+        self.assertEqual(act(self.db,'reclaim',{'event_id':'unregistered','op':'orphan','id':'orphan-x','ip':'10.4.0.3','source':'node-report'})['decision'],'orphan_isolated')
+        attempt={'event_id':'blocked-by-orphan','op':'issue','id':'lease-x','pool':'pool-a','claim':'claim-a','ip':'10.4.0.3','pod_uid':'pod-x','node_uid':'node-x','pool_generation':1,'at':20}
+        self.assertEqual(act(self.db,'lease',attempt)['decision'],'orphan_address_blocked')
+        self.assertEqual(act(self.db,'reclaim',{'event_id':'clear-unregistered','op':'resolve_orphan','id':'orphan-x','independent_receipt':'network-clear'})['decision'],'orphan_cleared')
+        self.assertEqual(act(self.db,'lease',dict(attempt,event_id='issued-after-clear'))['decision'],'bound')
+
+    def test_conflicting_holder_evidence_isolated_before_reclaim(self):
+        self.fixture('pool_normal');self.fixture('lease_normal')
+        self.assertEqual(act(self.db,'lease',{'event_id':'conflict','op':'conflict','id':'conflict-a','ip':'10.4.0.2','other_pod':'pod-z'})['decision'],'address_isolated')
+        self.assertEqual(one(self.db,"SELECT status FROM address_leases WHERE id='lease-a'")['status'],'isolated')
+        self.assertEqual(act(self.db,'reclaim',{'event_id':'resolve-conflict','op':'resolve_conflict','id':'conflict-a','independent_receipt':'two-node-proof'})['decision'],'conflict_resolved')
+
     def test_claim_expiry_only_stops_new_addresses(self):
         self.fixture('pool_normal');self.fixture('lease_normal')
         result=act(self.db,'pool',{'event_id':'expire','op':'expire_claim','id':'claim-a','at':101})
@@ -61,6 +75,15 @@ class Business(unittest.TestCase):
         self.assertEqual(one(self.db,"SELECT status FROM address_leases WHERE id='lease-a'")['status'],'fenced')
         attempt={'event_id':'late-issue','op':'issue','id':'lease-b','pool':'pool-a','claim':'claim-a','ip':'10.4.0.3','pod_uid':'pod-b','node_uid':'node-b','pool_generation':1,'at':102}
         self.assertEqual(act(self.db,'lease',attempt)['decision'],'source_unavailable')
+
+    def test_pool_transfer_invalidates_old_tenant_claim_even_before_expiry(self):
+        self.base()
+        self.assertEqual(act(self.db,'pool',{'event_id':'transfer-b','op':'transfer','id':'transfer-b','pool':'pool-a','tenant':'team-b','generation':2})['decision'],'transferred')
+        old={'event_id':'old-team-issue','op':'issue','id':'old-team-ip','pool':'pool-a','claim':'claim-a','ip':'10.4.0.3','pod_uid':'pod-old','node_uid':'node-old','pool_generation':2,'at':40}
+        self.assertEqual(act(self.db,'lease',old)['decision'],'source_unavailable')
+        self.assertEqual(act(self.db,'pool',{'event_id':'new-team-claim','op':'claim','id':'claim-b','pool':'pool-a','tenant':'team-b','capacity':2,'expires':100,'at':40})['decision'],'claim_active')
+        new=dict(old,event_id='new-team-issue',id='new-team-ip',claim='claim-b',pod_uid='pod-new')
+        self.assertEqual(act(self.db,'lease',new)['decision'],'bound')
 
     def test_all_fixtures_replay_and_module_origin(self):
         self.base()

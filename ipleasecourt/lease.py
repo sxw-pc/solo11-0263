@@ -13,7 +13,7 @@ def handle(db,x):
     if op=='issue':
         pool=one(db,'SELECT * FROM address_pools WHERE id=?',(x['pool'],))
         claim=one(db,'SELECT * FROM tenant_claims WHERE id=?',(x['claim'],))
-        if not pool or pool['status']!='active' or not claim or claim['pool_id']!=pool['id'] or claim['status']!='active' or claim['expires']<=x['at']:
+        if not pool or pool['status']!='active' or not claim or claim['pool_id']!=pool['id'] or claim['tenant']!=pool['tenant'] or claim['pool_generation']!=pool['generation'] or claim['status']!='active' or claim['expires']<=x['at']:
             return {'decision':'source_unavailable'}
         try: ip=ipaddress.ip_address(x['ip'])
         except ValueError:return {'decision':'invalid_ip'}
@@ -24,6 +24,8 @@ def handle(db,x):
         if count>=claim['capacity']:return {'decision':'claim_full'}
         occupied=one(db,"SELECT * FROM address_leases WHERE ip=? AND status IN ('bound','fenced','isolated')",(x['ip'],))
         if occupied:return {'decision':'address_occupied','holder':occupied['pod_uid']}
+        if one(db,"SELECT 1 FROM orphan_addresses WHERE ip=? AND status='isolated'",(x['ip'],)):
+            return {'decision':'orphan_address_blocked'}
         db.execute('INSERT INTO address_leases VALUES(?,?,?,?,?,?,?,?,?)',(x['id'],pool['id'],claim['id'],x['ip'],x['pod_uid'],x['node_uid'],pool['generation'],1,'bound'))
         return {'decision':'bound'}
     if op=='renew':

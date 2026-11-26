@@ -3,7 +3,7 @@ from .store import one,many
 
 SCHEMA='''
 CREATE TABLE IF NOT EXISTS address_pools(id TEXT PRIMARY KEY,network TEXT,tenant TEXT,generation INTEGER,domain TEXT,status TEXT);
-CREATE TABLE IF NOT EXISTS tenant_claims(id TEXT PRIMARY KEY,pool_id TEXT,tenant TEXT,capacity INTEGER,expires INTEGER,status TEXT);
+CREATE TABLE IF NOT EXISTS tenant_claims(id TEXT PRIMARY KEY,pool_id TEXT,tenant TEXT,pool_generation INTEGER,capacity INTEGER,expires INTEGER,status TEXT);
 CREATE TABLE IF NOT EXISTS pool_changes(id TEXT PRIMARY KEY,pool_id TEXT,new_tenant TEXT,new_generation INTEGER,status TEXT);
 '''
 
@@ -29,7 +29,7 @@ def handle(db,x):
         usable=ipaddress.ip_network(pool['network']).num_addresses-2
         total=one(db,"SELECT COALESCE(SUM(capacity),0) n FROM tenant_claims WHERE pool_id=? AND status='active' AND expires>?",(x['pool'],x['at']))['n']
         if total+x['capacity']>usable:return {'decision':'pool_overcommitted'}
-        db.execute('INSERT INTO tenant_claims VALUES(?,?,?,?,?,?)',(x['id'],x['pool'],x['tenant'],x['capacity'],x['expires'],'active'))
+        db.execute('INSERT INTO tenant_claims VALUES(?,?,?,?,?,?,?)',(x['id'],x['pool'],x['tenant'],pool['generation'],x['capacity'],x['expires'],'active'))
         return {'decision':'claim_active'}
     if op=='expire_claim':
         claim=one(db,'SELECT * FROM tenant_claims WHERE id=?',(x['id'],))

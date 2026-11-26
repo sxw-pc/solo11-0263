@@ -52,7 +52,7 @@ def handle(db,x):
         return {'decision':'address_reusable','ip':lease['ip']}
     if op=='orphan':
         db.execute('INSERT INTO orphan_addresses VALUES(?,?,?,?)',(x['id'],x['ip'],x['source'],'isolated'))
-        lease=one(db,"SELECT * FROM address_leases WHERE ip=? AND status='released' ORDER BY generation DESC LIMIT 1",(x['ip'],))
+        lease=one(db,"SELECT * FROM address_leases WHERE ip=? AND status IN ('bound','fenced','released') ORDER BY generation DESC LIMIT 1",(x['ip'],))
         if lease:
             db.execute("UPDATE address_leases SET status='isolated' WHERE id=?",(lease['id'],))
             db.execute("UPDATE reclaim_cases SET status='reopened' WHERE lease_id=? AND status='complete'",(lease['id'],))
