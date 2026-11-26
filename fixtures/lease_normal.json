@@ -1,0 +1,4 @@
+[
+ {"event_id":"l1","op":"issue","id":"lease-a","pool":"pool-a","claim":"claim-a","ip":"10.4.0.2","pod_uid":"pod-a","node_uid":"node-a","pool_generation":1,"at":20},
+ {"event_id":"l2","op":"fence","id":"fence-a","lease":"lease-a","generation":2,"at":30}
+]

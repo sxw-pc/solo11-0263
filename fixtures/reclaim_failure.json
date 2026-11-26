@@ -1,0 +1,7 @@
+[
+ {"event_id":"rf1","op":"gateway","id":"old-gw","case":"reclaim-a","gateway":"gateway-c","generation":1,"at":34},
+ {"event_id":"rf2","op":"connection","id":"late-live","case":"reclaim-a","at":35,"state":"active"},
+ {"event_id":"rf3","op":"close","case":"reclaim-a"},
+ {"event_id":"rf4","op":"connection","id":"drain-again","case":"reclaim-a","at":36,"state":"drained"},
+ {"event_id":"rf5","op":"close","case":"reclaim-a"}
+]

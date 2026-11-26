@@ -1,0 +1,4 @@
+[
+ {"event_id":"path-orphan","op":"orphan","id":"orphan-a","ip":"10.4.0.2","source":"agent-x"},
+ {"event_id":"path-close","op":"close","case":"reclaim-a"}
+]

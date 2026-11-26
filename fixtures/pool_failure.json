@@ -1,0 +1,4 @@
+[
+ {"event_id":"pf1","op":"publish","id":"overlap","network":"10.4.0.0/30","tenant":"team-b","generation":1,"domain":"rack-b"},
+ {"event_id":"pf2","op":"transfer","id":"transfer-early","pool":"pool-a","tenant":"team-b","generation":2}
+]

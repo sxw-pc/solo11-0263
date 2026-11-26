@@ -1,0 +1,7 @@
+[
+ {"event_id":"r1","op":"open","id":"reclaim-a","lease":"lease-a","generation":2,"gateways":2},
+ {"event_id":"r2","op":"gateway","id":"gw-a","case":"reclaim-a","gateway":"gateway-a","generation":2,"at":31},
+ {"event_id":"r3","op":"gateway","id":"gw-b","case":"reclaim-a","gateway":"gateway-b","generation":2,"at":32},
+ {"event_id":"r4","op":"connection","id":"conn-end","case":"reclaim-a","at":33,"state":"drained"},
+ {"event_id":"r5","op":"close","case":"reclaim-a"}
+]

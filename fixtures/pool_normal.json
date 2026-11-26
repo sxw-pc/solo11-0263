@@ -1,0 +1,4 @@
+[
+ {"event_id":"p1","op":"publish","id":"pool-a","network":"10.4.0.0/29","tenant":"team-a","generation":1,"domain":"rack-a"},
+ {"event_id":"p2","op":"claim","id":"claim-a","pool":"pool-a","tenant":"team-a","capacity":2,"expires":100,"at":10}
+]
