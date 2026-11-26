@@ -1,0 +1,55 @@
+[
+  {
+    "event_id": "fabric-l1",
+    "op": "link",
+    "id": "nx",
+    "from": "node-a",
+    "to": "node-x",
+    "cost": 1
+  },
+  {
+    "event_id": "fabric-l2",
+    "op": "link",
+    "id": "xd",
+    "from": "node-x",
+    "to": "node-b",
+    "cost": 1
+  },
+  {
+    "event_id": "fabric-l3",
+    "op": "link",
+    "id": "nd",
+    "from": "node-a",
+    "to": "node-b",
+    "cost": 5
+  },
+  {
+    "event_id": "fabric-r",
+    "op": "route",
+    "id": "web",
+    "source": "lease-a",
+    "destination": "lease-b"
+  },
+  {
+    "event_id": "fabric-s",
+    "op": "send",
+    "id": "web"
+  },
+  {
+    "event_id": "fabric-d",
+    "op": "down",
+    "id": "xd"
+  },
+  {
+    "event_id": "fabric-s2",
+    "op": "send",
+    "id": "web"
+  },
+  {
+    "event_id": "fabric-r2",
+    "op": "route",
+    "id": "web-alt",
+    "source": "lease-a",
+    "destination": "lease-b"
+  }
+]
