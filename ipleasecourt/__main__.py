@@ -4,6 +4,15 @@ from pathlib import Path
 from .settings import MODULES, DEMO
 from .store import act, connect, replay, many
 
+OP_SUBSYSTEM = {
+    'publish': 'pool', 'claim': 'pool', 'expire_claim': 'pool', 'transfer': 'pool',
+    'issue': 'lease', 'renew': 'lease', 'fence': 'lease', 'conflict': 'lease',
+    'link': 'fabric', 'down': 'fabric', 'route': 'fabric', 'send': 'fabric',
+    'prepare': 'route_update', 'install': 'route_update', 'witness': 'route_update',
+    'pause': 'route_update', 'inject': 'route_update', 'forward': 'route_update',
+    'drain': 'route_update', 'finish': 'route_update', 'inflight': 'route_update',
+}
+
 
 def main():
     p = argparse.ArgumentParser()
@@ -28,7 +37,14 @@ def main():
             result = []
             for subsystem, file in files:
                 steps = json.loads(Path(file).read_text(encoding='utf-8'))
-                result.append({'fixture': file, 'results': [act(db, subsystem, step) for step in steps]})
+                outcomes = []
+                for step in steps:
+                    # Cross-subsystem fixtures (e.g. route cutover) dispatch
+                    # each row by operation; single-subsystem fixtures still
+                    # resolve to their owning module exactly as before.
+                    target = OP_SUBSYSTEM.get(step['op'], subsystem)
+                    outcomes.append(act(db, target, step))
+                result.append({'fixture': file, 'results': outcomes})
         print(json.dumps(result, ensure_ascii=False, indent=2))
     finally:
         db.close()
